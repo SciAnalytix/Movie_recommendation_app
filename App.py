@@ -4,14 +4,13 @@ import pandas as pd
 import requests
 import os
 
-# ✅ Function to download from Google Drive (handles large files too)
+# ✅ Function to download from Google Drive (handles large files safely)
 def download_from_gdrive(file_id, destination):
     URL = "https://drive.google.com/uc?export=download"
     session = requests.Session()
 
     response = session.get(URL, params={'id': file_id}, stream=True)
 
-    # Check for confirmation token (for large files)
     def get_confirm_token(response):
         for key, value in response.cookies.items():
             if key.startswith('download_warning'):
@@ -27,13 +26,19 @@ def download_from_gdrive(file_id, destination):
             if chunk:
                 f.write(chunk)
 
-# ✅ Download similarity.pkl from Google Drive only if it doesn't exist
-if not os.path.exists("similarity.pkl"):
-    download_from_gdrive("15B5i0wsuL2fDDWhCZeZgQb5pn1Z7zguO", "similarity.pkl")
+# ✅ Download similarity.pkl if not already present
+SIMILARITY_FILE = "similarity.pkl"
+if not os.path.exists(SIMILARITY_FILE):
+    download_from_gdrive("1Kp3BR4IQQbaNErp-dukTNf1NuvHXNDd4", SIMILARITY_FILE)
+
+# ✅ Validate file size (basic check for corruption)
+if os.path.getsize(SIMILARITY_FILE) < 10000:
+    st.error("Downloaded similarity.pkl seems corrupted or too small. Please check the file ID.")
+    st.stop()
 
 # ✅ Load the data
 movies = pickle.load(open('df.pkl', 'rb'))
-similarity = pickle.load(open('similarity.pkl', 'rb'))
+similarity = pickle.load(open(SIMILARITY_FILE, 'rb'))
 
 # ✅ Streamlit UI Setup
 st.set_page_config(page_title="🎬 Movie Recommender", layout="centered")
