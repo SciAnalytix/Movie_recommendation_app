@@ -19,7 +19,7 @@ download_similarity_file()
 
 # Load the data
 movies = pickle.load(open('df.pkl', 'rb'))
-similarity = pickle.load(open('similarity.pkl', 'rb'))  # This will now work
+similarity = pickle.load(open('similarity.pkl', 'rb'))  
 
 # Streamlit app UI
 st.set_page_config(page_title="🎬 Movie Recommender", layout="centered")
