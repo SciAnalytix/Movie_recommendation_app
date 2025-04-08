@@ -66,4 +66,11 @@ def recommend(movie):
     return recommended_movies
 
 # Button to trigger recommendation
-if st.button("
+if st.button("🎯 Recommend"):
+    recommendations = recommend(selected_movie)
+    st.subheader("📌 Recommended Movies:")
+    for i, rec in enumerate(recommendations, 1):
+        st.markdown(f'<div class="movie-box">{i}. {rec}</div>', unsafe_allow_html=True)
+
+st.markdown("---")
+st.markdown("Made with ❤️ by Prakhar Sharma")
