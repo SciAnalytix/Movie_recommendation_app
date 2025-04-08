@@ -1,9 +1,25 @@
 import streamlit as st
 import pickle
+import os
+import requests
 
-# Load the data
+# Load the movies data (already in repo)
 movies = pickle.load(open('df.pkl', 'rb'))
-similarity = pickle.load(open('similarity.pkl', 'rb'))
+
+# Handle similarity.pkl from Google Drive
+file_id = "15B5i0wsuL2fDDWhCZeZgQb5pn1Z7zguO"
+download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+filename = "similarity.pkl"
+
+if not os.path.exists(filename):
+    with st.spinner("Downloading similarity.pkl from Google Drive..."):
+        response = requests.get(download_url)
+        with open(filename, "wb") as f:
+            f.write(response.content)
+        st.success("similarity.pkl downloaded successfully!")
+
+# Load the similarity matrix
+similarity = pickle.load(open(filename, 'rb'))
 
 # Set page config
 st.set_page_config(page_title="🎬 Movie Recommender", layout="centered")
@@ -50,10 +66,4 @@ def recommend(movie):
     return recommended_movies
 
 # Button to trigger recommendation
-if st.button("🎯 Recommend"):
-    recommendations = recommend(selected_movie)
-    st.subheader("📌 Recommended Movies:")
-    for i, rec in enumerate(recommendations, 1):
-        st.markdown(f'<div class="movie-box">{i}. {rec}</div>', unsafe_allow_html=True)
-st.markdown("---")
-st.markdown("Made with ❤️ by Prakhar Sharma")
+if st.button("
