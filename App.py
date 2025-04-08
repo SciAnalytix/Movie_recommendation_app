@@ -1,30 +1,29 @@
 import streamlit as st
 import pickle
-import os
+import pandas as pd
 import requests
+import os
 
-# Load the movies data (already in repo)
-movies = pickle.load(open('df.pkl', 'rb'))
-
-# Handle similarity.pkl from Google Drive
-file_id = "15B5i0wsuL2fDDWhCZeZgQb5pn1Z7zguO"
-download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
-filename = "similarity.pkl"
-
-if not os.path.exists(filename):
-    with st.spinner("Downloading similarity.pkl from Google Drive..."):
-        response = requests.get(download_url)
-        with open(filename, "wb") as f:
+# Function to download the similarity.pkl file from Google Drive
+def download_similarity_file():
+    url = "https://drive.google.com/uc?id=15B5i0wsuL2fDDWhCZeZgQb5pn1Z7zguO"
+    output_file = "similarity.pkl"
+    
+    if not os.path.exists(output_file):
+        response = requests.get(url)
+        with open(output_file, 'wb') as f:
             f.write(response.content)
-        st.success("similarity.pkl downloaded successfully!")
 
-# Load the similarity matrix
-similarity = pickle.load(open(filename, 'rb'))
+# Download similarity.pkl if not exists
+download_similarity_file()
 
-# Set page config
+# Load the data
+movies = pickle.load(open('df.pkl', 'rb'))
+similarity = pickle.load(open('similarity.pkl', 'rb'))  # This will now work
+
+# Streamlit app UI
 st.set_page_config(page_title="🎬 Movie Recommender", layout="centered")
 
-# Custom styling
 st.markdown("""
     <style>
         .title {
@@ -49,15 +48,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Title
 st.markdown('<div class="title">🎥 Movie Recommendation System</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub">Find your next favorite movie!</div>', unsafe_allow_html=True)
 
-# Movie selection dropdown
 movie_list = movies['title'].values
 selected_movie = st.selectbox("Choose a movie you like", movie_list)
 
-# Recommendation logic
 def recommend(movie):
     movie_index = movies[movies['title'] == movie].index[0]
     distances = similarity[movie_index]
@@ -65,7 +61,6 @@ def recommend(movie):
     recommended_movies = [movies.iloc[i[0]].title for i in movie_list]
     return recommended_movies
 
-# Button to trigger recommendation
 if st.button("🎯 Recommend"):
     recommendations = recommend(selected_movie)
     st.subheader("📌 Recommended Movies:")
